@@ -36,7 +36,8 @@ const daemon = new Daemon('https://builder.arduino.cc/v3/boards', chromeExtensio
 const handleUpload = () => {
   const target = {
     board: 'arduino:samd:mkr1000',
-    port: '/dev/ttyACM0',
+    // port: '/dev/ttyACM0',
+    port: "COM16",
     network: false
   };
 

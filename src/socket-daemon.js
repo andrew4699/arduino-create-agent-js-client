@@ -152,24 +152,25 @@ export default class SocketDaemon extends Daemon {
         });
 
         if (found) {
-          return fetch('https://s3.amazonaws.com/arduino-create-static/agent-metadata/agent-version.json')
-            .then(response => response.json().then(data => {
-              if (this.agentInfo.version && (semVerCompare(this.agentInfo.version, data.Version) >= 0 || this.agentInfo.version.indexOf('dev') !== -1)) {
-                return this.agentInfo;
-              }
+          return Promise.resolve(() => this.agentInfo);
+          // return fetch('https://s3.amazonaws.com/arduino-create-static/agent-metadata/agent-version.json')
+          //   .then(response => response.json().then(data => {
+          //     if (this.agentInfo.version && (semVerCompare(this.agentInfo.version, data.Version) >= 0 || this.agentInfo.version.indexOf('dev') !== -1)) {
+          //       return this.agentInfo;
+          //     }
 
-              if (updateAttempts === 0) {
-                return this.update();
-              }
-              if (updateAttempts < 3) {
-                return timer(10000).subscribe(() => this.update());
-              }
-              updateAttempts += 1;
-              this.error.next('plugin version incompatible');
-              return Promise.reject(new Error('plugin version incompatible'));
-            }))
-            // If version API broken, go ahead with current version
-            .catch(() => this.agentInfo);
+          //     if (updateAttempts === 0) {
+          //       return this.update();
+          //     }
+          //     if (updateAttempts < 3) {
+          //       return timer(10000).subscribe(() => this.update());
+          //     }
+          //     updateAttempts += 1;
+          //     this.error.next('plugin version incompatible');
+          //     return Promise.reject(new Error('plugin version incompatible'));
+          //   }))
+          //   // If version API broken, go ahead with current version
+          //   .catch(() => this.agentInfo);
         }
 
         // Set channelOpen false for the first time
@@ -419,10 +420,14 @@ export default class SocketDaemon extends Daemon {
    * @param {Object} data
    */
   daemonUpload(data) {
+    console.log("daemonUpload");
+    console.log(`${this.pluginURL}/upload`);
+    console.log("body:", JSON.stringify(data));
+    
     fetch(`${this.pluginURL}/upload`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
     })
@@ -476,6 +481,27 @@ export default class SocketDaemon extends Daemon {
     if (!socketParameters.extra.network) {
       socketParameters.signature = uploadCommandInfo.signature;
     }
+
+    console.log("final payload", socketParameters);
+    socketParameters.extra = {
+      "auth":{
+          "username":null,
+          "password":null,
+          "private_key":null,
+          "port":null
+        },
+        "wait_for_upload_port":true,
+        "use_1200bps_touch":true,
+        "network":false,
+        "params_verbose":"-v",
+        "params_quiet":"-q -q",
+        "verbose":true
+    };
+
+    socketParameters.filename = "sketch_mar11a.ino.hex";
+
+    delete socketParameters.data;
+    delete socketParameters.network;
 
     this.downloadingDone.subscribe(() => {
       this.serialMonitorOpened.pipe(filter(open => !open))
