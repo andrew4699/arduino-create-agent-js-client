@@ -41,8 +41,13 @@ const handleUpload = () => {
     network: false
   };
 
+  const other = {
+    commandline: "\"{runtime.tools.avrdude.path}/bin/avrdude\" \"-C{runtime.tools.avrdude.path}/etc/avrdude.conf\" {upload.verbose} -patmega32u4 -cavr109 -P{serial.port} -D \"-Uflash:w:{build.path}/{build.project_name}.hex:i\"",
+    signature: `5e22e3da4c8b684750e80bc58f0581f0d4089a480d7777581a3c9d9a0178c065cc405a9d8d9b8c856bd0388c2777ca4a65680adfb5b4c0ae4ab2c98c3bbb435adc4c18a2b737af5689138b27cda1c4adb3d96dc12170f9cfd6632133f3d0b27dc3f03e9f28d38004b8f0d8f4495418fa238a9f0de0cb410464620ef9a9777a3bb0d8431a6226c98073c7885774fdde226e282d4fe9a7e221b5a1cc7dc46ef443083500ab80440703aaf18b1e5c055c418ad3c4287688935a386fb91b08b3801a5f3545e5bcf0dcaa5fb5488ecd37f4a8aee33ba3e0f1f31aaf07ff749eb0ee850a0ba84485695288b0905afb8b50fed302dba4d899adac8d253bb197e426874e`,    
+  };
+
   // Upload a compiled sketch.
-  daemon.uploadSerial(target, 'serial_mirror', { bin: HEX });
+  daemon.uploadSerial(target, 'serial_mirror', { bin: HEX }, other.commandline, other.signature);
 };
 
 const handleDownloadTool = e => {
